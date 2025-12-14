@@ -2,8 +2,6 @@
 
 PowerMed is a lightweight Flask + SQLite web app for **patient registration** and **clinical record logging** (diseases, symptoms, and an approximate severity score), with **type-ahead suggestions** backed by a **hard-coded medical vocabulary** plus optional **BioBERT NER suggestions** via Hugging Face Transformers.
 
-> Important: This project is a software prototype for information capture and triage-style scoring. It is **not** a diagnostic or treatment tool.
-
 ---
 
 ## Features
@@ -25,20 +23,4 @@ PowerMed is a lightweight Flask + SQLite web app for **patient registration** an
 - Jinja2 templates (`templates/*.html`)
 
 ---
-
-## Project Structure (recommended)
-
-```text
-PowerMed/
-  app.py
-  templates/
-    index.html
-    patients.html
-    patient.html
-    edit_patient.html
-    edit_record.html
-  static/
-    (optional: css/js/images)
-  .gitignore
-  README.md
 
