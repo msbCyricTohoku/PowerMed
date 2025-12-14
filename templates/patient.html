@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Record - PowerMed</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+
+
+    .suggestion, .symp_sugg {
+      cursor: pointer;
+
+      border: 1px solid #ccc;
+      padding: 5px;
+
+      margin: 2px;
+      display: inline-block;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+    }
+    .selected-item {
+      display: inline-block;
+      margin: 2px;
+      padding: 5px 10px;
+      background-color: #007bff;
+      color: white;
+      border-radius: 15px;
+    }
+    .remove-item {
+      cursor: pointer;
+      margin-left: 5px;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar-custom">
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('patients') }}">Existing Patients</a>
+  </nav>
+  <div class="container mt-5">
+    <h2>Patient: {{ patient.name }}</h2>
+    <p><strong>Date of Birth:</strong> {{ patient.dob.strftime('%Y-%m-%d') }}</p>
+    <p><strong>Gender:</strong> {{ patient.gender }}</p>
+    <p><strong>Other Information:</strong> {{ patient.other_info or "N/A" }}</p>
+    <div class="mb-3">
+      <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" class="btn btn-warning">Edit Patient Info</a>
+      <a href="{{ url_for('index') }}" class="btn btn-secondary">Register New Patient</a>
+      <a href="{{ url_for('patients') }}" class="btn btn-info">Back to Patient List</a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-header">
+        <h4>Add New Record</h4>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="form-group">
+            <label for="disease_input">Diseases:</label>
+            <input type="text" id="disease_input" class="form-control" placeholder="Type to search diseases">
+            <div id="disease_suggestions" class="mt-2"></div>
+            <div id="selected_diseases" class="mt-2"></div>
+            <input type="hidden" name="diseases" id="diseases_field">
+          </div>
+          <div class="form-group">
+            <label for="symptom_input">Symptoms:</label>
+            <input type="text" id="symptom_input" class="form-control" placeholder="Type to search symptoms">
+            <div id="symptom_suggestions" class="mt-2"></div>
+            <div id="selected_symptoms" class="mt-2"></div>
+            <input type="hidden" name="symptoms" id="symptoms_field">
+          </div>
+          <button type="submit" class="btn btn-success">Add Record</button>
+        </form>
+      </div>
+    </div>
+
+    <h4>Previous Records</h4>
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Diseases</th>
+          <th>Symptoms</th>
+          <th>Severity (1-10)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+        <tr>
+          <td>{{ record.date.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>{{ record.disease }}</td>
+          <td>{{ record.symptoms }}</td>
+          <td>{{ record.severity }}</td>
+          <td>
+            <a href="{{ url_for('edit_record', record_id=record.id) }}" class="btn btn-sm btn-info">Edit</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="mt-4">
+      <a href="{{ url_for('patients') }}" class="btn btn-info">Back to Patient List</a>
+      <a href="{{ url_for('index') }}" class="btn btn-primary">Register New Patient</a>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      let selectedDiseases = [];
+      let selectedSymptoms = [];
+
+      function updateHiddenFields(){
+        $("#diseases_field").val(selectedDiseases.join(", "));
+        $("#symptoms_field").val(selectedSymptoms.join(", "));
+      }
+
+      function addSelectedItem(item, container, array) {
+        if (array.indexOf(item) === -1) {
+          array.push(item);
+          container.append(`<span class="selected-item">${item} <span class="remove-item" data-item="${item}">&times;</span></span>`);
+          updateHiddenFields();
+        }
+      }
+
+      $("#disease_input").on('input', function(){
+        let query = $(this).val();
+        if(query.length > 0){
+          $.getJSON("/suggest", {query: query}, function(data){
+            let html = "";
+            data.forEach(function(item){
+              if(item.type === "disease"){
+                html += `<div class='suggestion' data-disease='${item.value}'>${item.value}</div>`;
+              }
+            });
+            $("#disease_suggestions").html(html);
+          });
+        } else {
+          $("#disease_suggestions").empty();
+        }
+      });
+
+      $(document).on('click', '.suggestion', function(){
+        let disease = $(this).data('disease');
+        addSelectedItem(disease, $("#selected_diseases"), selectedDiseases);
+      });
+
+      $("#symptom_input").on('input', function(){
+        let query = $(this).val();
+        if(query.length > 0){
+          $.getJSON("/suggest", {query: query}, function(data){
+            let html = "";
+            data.forEach(function(item){
+              if(item.type === "symptom"){
+                html += `<div class='symp_sugg' data-symptom='${item.value}'>${item.value}</div>`;
+              }
+            });
+            $("#symptom_suggestions").html(html);
+          });
+        } else {
+          $("#symptom_suggestions").empty();
+        }
+      });
+
+      $(document).on('click', '.symp_sugg', function(){
+        let symptom = $(this).data('symptom');
+        addSelectedItem(symptom, $("#selected_symptoms"), selectedSymptoms);
+
+      });
+
+
+      $(document).on('click', '.remove-item', function(){
+        let item = $(this).data('item');
+        if(selectedDiseases.indexOf(item) !== -1){
+          selectedDiseases = selectedDiseases.filter(i => i !== item);
+          $("#selected_diseases").find(`[data-item="${item}"]`).parent().remove();
+        }
+        if(selectedSymptoms.indexOf(item) !== -1){
+          selectedSymptoms = selectedSymptoms.filter(i => i !== item);
+          $("#selected_symptoms").find(`[data-item="${item}"]`).parent().remove();
+        }
+        updateHiddenFields();
+      });
+    });
+  </script>
+</body>
+</html>

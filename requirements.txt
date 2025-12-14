@@ -1,0 +1,12 @@
+#requirements.txt PowerMed
+
+Flask>=3.0
+Flask-SQLAlchemy>=3.1
+
+pandas>=2.2
+transformers>=4.42
+
+#PyTorch (CPU-only by default with pip). To force CPU wheels, uncomment the next line:
+ --extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.3
+
