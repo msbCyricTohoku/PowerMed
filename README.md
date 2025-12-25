@@ -1,6 +1,6 @@
-# PowerMed
+# LiteEMR
 
-PowerMed is a lightweight Flask + SQLite web app for **patient registration** and **clinical record logging** (diseases, symptoms, and an approximate severity score), with **type-ahead suggestions** backed by a **hard-coded medical vocabulary** plus optional **BioBERT NER suggestions** via Hugging Face Transformers.
+LiteEMR is a lightweight Flask + SQLite web app for **patient registration** and **clinical record logging** (diseases, symptoms, and an approximate severity score), with **type-ahead suggestions** backed by a **hard-coded medical vocabulary** plus optional **BioBERT NER suggestions** via Hugging Face Transformers.
 
 ---
 

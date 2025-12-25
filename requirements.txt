@@ -1,4 +1,4 @@
-#requirements.txt PowerMed
+#requirements.txt LiteEMR
 
 Flask>=3.0
 Flask-SQLAlchemy>=3.1
